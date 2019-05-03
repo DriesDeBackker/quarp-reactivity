@@ -5,7 +5,7 @@ A reactive library built on top of reactive extensions (observables) with consis
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `observables` to your list of dependencies in `mix.exs`:
+by adding `quarp` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
