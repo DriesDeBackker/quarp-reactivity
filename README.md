@@ -1,6 +1,7 @@
 # Quarp
 
-A reactive library built on top of reactive extensions (observables) with consistency guarantees in the spirit of Quarp"
+A library for distributed reactiive programming with consistency guarantees in the spirit of Quarp.
+Built on top of and integrated with Observables Extended, a Reactive Extensions library for Elixir."
 
 ## Installation
 
@@ -10,7 +11,7 @@ by adding `quarp` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:quarp, "~> 0.1.0"}
+    {:quarp, "~> 0.2.0"}
   ]
 end
 ```

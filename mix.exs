@@ -4,7 +4,7 @@ defmodule Quarp.MixProject do
   def project do
     [
       app: :quarp,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -30,8 +30,8 @@ defmodule Quarp.MixProject do
   end
 
   defp description() do
-    "A reactive library built on top of reactive extensions (observables) 
-    with consistency guarantees in the spirit of Quarp."
+    "A library for distributed reactiive programming with consistency guarantees in the spirit of Quarp.
+    Built on top of and integrated with Observables Extended, a Reactive Extensions library for Elixir."
   end
 
 
