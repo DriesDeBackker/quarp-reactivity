@@ -120,6 +120,7 @@ defmodule Reactivity.Registry do
 
   def handle_call({:subscribe, pid}, _from, %{:subs => ss} = state) do
     Logger.debug "Adding subscription for #{inspect pid}"
+    bring_up_to_speed(pid, state)
     {:reply, :ok, %{state | :subs => MapSet.put(ss, pid)}}
   end
 
@@ -144,6 +145,11 @@ defmodule Reactivity.Registry do
   defp publish_new_signal(signal, name, %{subs: subs}) do
     subs
     |> Enum.map(fn(sub) -> GenServer.call(sub, {:new_signal, signal, name}) end)
+  end
+
+  defp bring_up_to_speed(new_sub, %{:table => t}) do
+    :ets.tab2list(t)
+    |> Enum.map(fn {name, signal} -> GenServer.call(new_sub, {:new_signal, signal, name}) end)
   end
 
   defp publish_new_guarantee(%{subs: subs, guarantee: guarantee}) do
