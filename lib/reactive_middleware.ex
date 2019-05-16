@@ -6,7 +6,8 @@ defmodule ReactiveMiddleware.Application do
     # List all child processes to be supervised
     children = [
       supervisor(Reactivity.Registry, [[]]),
-      supervisor(Connector, [[]]),
+      supervisor(Network.Evaluator, [[]]),
+      supervisor(Network.Connector, [[]])
     ]
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

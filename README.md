@@ -1,7 +1,14 @@
 # Quarp
 
 A library for distributed reactiive programming with consistency guarantees in the spirit of Quarp.
-Built on top of and integrated with Observables Extended, a Reactive Extensions library for Elixir."
+
+Features fifo (no guarantee), glitch-freedom and logical clock synchronization as guarantees.
+
+Can easily be extended with new guarantees if so desired by adding an implementation for the necessary operations in the Context module.
+
+Built on top of and integrated with Observables Extended, a Reactive Extensions library for Elixir.
+
+This library was developed mainly for academic purposes, namely for exploring distributed reactive programming (for the IoT) with consistency guarantees.
 
 ## Installation
 

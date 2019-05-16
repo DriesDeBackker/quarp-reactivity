@@ -1,6 +1,10 @@
 defmodule Reactivity.Registry do
   @doc """
-  The Registry is responsible for keeping track of signals by their names.
+  The Registry is responsible for 
+  * keeping track of signals by their names,
+  * holding the consistency guarantee that is in use, and
+  * synchronizing signals and guarantee with other registries
+    in order to create a globally consistent view of both.
   """
   use GenServer
   require Logger
@@ -71,9 +75,8 @@ defmodule Reactivity.Registry do
 
   def init(_args) do
     table = :ets.new(:signals, [:named_table, :set, :protected])
-    {:ok, %{:table => table, :subs => MapSet.new(), :guarantee => nil}}
+    {:ok, %{:table => table, :subs => MapSet.new(), :guarantee => nil, }}
   end
-
 
   def handle_cast(m, state) do
     Logger.debug "Cast: #{inspect m}"
@@ -138,9 +141,9 @@ defmodule Reactivity.Registry do
     {:noreply, state}
   end
 
-  ##################
-  # Implementation #
-  ##################
+  ##########################
+  # Implementation Helpers #
+  ##########################
 
   defp publish_new_signal(signal, name, %{subs: subs}) do
     subs

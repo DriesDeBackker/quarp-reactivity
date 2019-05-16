@@ -1,9 +1,9 @@
-defmodule Connector do
+defmodule Network.Connector do
 	use GenServer
 	require Logger
 
-	@port2 7777
-	@port1 6666
+	@port1 7777
+	#@port2 6666
 	@multicast {127, 0, 0, 1}
 
 	def start_link(_arg) do
@@ -12,7 +12,8 @@ defmodule Connector do
 
 	def init([]) do
 		Logger.debug("Registering the registry globally as #{Node.self}")
-		:global.register_name(Node.self, Process.whereis(Reactivity.Registry))
+		:global.register_name({Node.self, :registry}, Process.whereis(Reactivity.Registry))
+		:global.register_name({Node.self, :evaluator}, Process.whereis(Network.Evaluator))
 		{:ok, s} = :gen_udp.open(@port1, [
 			:binary,
 			{:reuseaddr, true},
@@ -30,7 +31,7 @@ defmodule Connector do
 	defp announce() do
   	Logger.info("Announcing our presence on the network")
   	{:ok, sender} = :gen_udp.open(0, mode: :binary)
-  	:ok = :gen_udp.send(sender, @multicast, @port2, "#{Node.self()}")
+  	:ok = :gen_udp.send(sender, @multicast, @port1, "#{Node.self()}")
 	end
 
 	def handle_info({:udp, _clientSocket, _clientIp, _clientPort, msg}, socket) do
@@ -49,7 +50,7 @@ defmodule Connector do
   	Node.connect(hostname)
   	Logger.info("disovered #{hostname}")
   	:global.sync()
-  	hostregistry = :global.whereis_name(hostname)
+  	hostregistry = :global.whereis_name({hostname, :registry})
   	Reactivity.Registry.subscribe(hostregistry)
   	GenServer.call(hostregistry, {:subscribe, Process.whereis(Reactivity.Registry)})
 	end
