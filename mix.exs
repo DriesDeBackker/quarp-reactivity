@@ -45,5 +45,5 @@ defmodule Quarp.MixProject do
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/DriesDeBackker/quarp-reactivity.git"}
     ]
-end
+  end
 end
