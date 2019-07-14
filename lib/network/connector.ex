@@ -3,7 +3,7 @@ defmodule Network.Connector do
 	require Logger
 
 	@port 6666
-	@multicast {239, 0, 0, 250}
+	@multicast {127, 0, 0, 1}
 
 	def start_link(_arg) do
   	GenServer.start_link(__MODULE__, [], name: __MODULE__)
