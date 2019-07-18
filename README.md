@@ -1,4 +1,4 @@
-# Quarp
+# Quarp-reactivity
 
 A library for distributed reactiive programming with consistency guarantees in the spirit of QUARP. (https://haslab.uminho.pt/joseproenca/files/quarp.pdf)
 
