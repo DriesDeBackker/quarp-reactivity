@@ -4,7 +4,7 @@ defmodule Quarp.MixProject do
   def project do
     [
       app: :quarp,
-      version: "0.3.23",
+      version: "1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
