@@ -27,12 +27,21 @@ defmodule Reactivity.DSL.Signal do
 	end
 
 	@doc """
-	Transforms a signal into a plain observable.
+	Transforms a signal into a plain observable, stripping all messages from their contexts.
 	"""
 	def to_plain_obs({:signal, sobs}) do
 		{vobs, _cobs} = sobs
 		|> Obs.unzip
 		vobs
+	end
+
+	@doc """
+	Transforms a signal into a signal observable, that is: an observable with output of the format {v, c}.
+	Thus, the messages of the signal are fully kept, no context is stripped.
+	"""
+
+	def to_signal_obs({:signal, sobs}) do
+		sobs
 	end
 
 	@doc """
@@ -128,12 +137,23 @@ defmodule Reactivity.DSL.Signal do
   end
 
 	@doc """
-	Inspects the given signal by printing its output values to the console.
+	Inspects the given signal by printing its output values `v` to the console.
 	"""
-	def print({:signal, obs}) do
-		obs
+	def print({:signal, sobs}) do
+		{vobs, _cobs} = sobs
+		|> Obs.unzip
+		vobs
 		|> Obs.inspect
-		{:signal, obs}
+		{:signal, sobs}
+	end
+
+	@doc """
+	Inspects the given signal by printing its output messages `{v, c}` to the console.
+	"""
+	def print_message({:signal, sobs}) do
+		sobs
+		|> Obs.inspect
+		{:signal, sobs}
 	end
 
 end
