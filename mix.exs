@@ -29,8 +29,8 @@ defmodule Quarp.MixProject do
   end
 
   defp description() do
-    "A library for distributed reactive programming with consistency guarantees in the spirit of Quarp.
-    Features fifo (no guarantee), glitch-freedom and logical clock synchronization as guarantees."
+    "A library for distributed reactive programming with consistency guarantees in the spirit of 'Quality Aware Reacive Programming for the IoT'.
+    Features fifo (no guarantee), (relaxed) glitch-freedom ({:g, margin}) and (relaxed) logical clock synchronization ({:t, margin}) as guarantees."
   end
 
 
