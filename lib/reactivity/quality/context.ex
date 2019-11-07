@@ -1,4 +1,5 @@
 defmodule Reactivity.Quality.Context do
+	@moduledoc false
 	alias Observables.Obs
 	require Logger
 
