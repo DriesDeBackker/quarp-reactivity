@@ -1,6 +1,6 @@
 # QUARP Implementation
 
-A library for distributed reactiive programming with consistency guarantees in the spirit of Quality Aware Reactive Programing for the IoT (QUARP) (https://haslab.uminho.pt/joseproenca/files/quarp.pdf)
+A library for distributed reactiive programming with consistency guarantees in the spirit of Quality Aware Reactive Programing for the IoT (QUARP) (https://haslab.uminho.pt/joseproenca/files/quarp.pdf), implemented as https://github.com/DriesDeBackker/quarp-reactivity.
 
 Provides a DSL for reactive programming, made distributed by usage of the Reactive Programming Middleware dependency: https://github.com/DriesDeBackker/rp-middleware, https://hex.pm/packages/rp_middleware)
 
