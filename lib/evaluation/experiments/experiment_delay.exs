@@ -19,12 +19,12 @@ params = [
 		:"nerves@192.168.1.199", 
  		:"nerves@192.168.1.224", 
  		:"nerves@192.168.1.247"],
-	nb_of_vars: 5,
-	graph_depth: 10,
-	signals_per_level_avg: 2,
+	nb_of_vars: 3,
+	graph_depth: 4,
+	signals_per_level_avg: 3,
 	deps_per_signal_avg: 2,
 	nodes_locality: 0.5,
-	update_interval_mean: 2000,
+	update_interval_mean: 3000,
 	update_interval_sd: 100,
 	experiment_length: 30_000]
 
@@ -41,23 +41,33 @@ var = fn name, im, isd ->
 		run = fn
 			f -> 
 				if Signal.signal(:exp) |> Signal.evaluate == true do
-					Subject.next(var_handle, {name, round(:erlang.monotonic_time / 1000_000)})
+					val = round(:erlang.monotonic_time / 1000_000)
+					Subject.next(var_handle, {name, val})
 				end
 				:timer.sleep(round(:rand.normal(im, isd*isd)))
 				f.(f)
 			end
 		Task.start fn -> run.(run) end
-		var_handle
-		|> Signal.from_plain_obs
-		|> Signal.register(name)
+		sig = 
+			var_handle
+			|> Signal.from_plain_obs
+			|> Signal.register(name)
+		sig
+		|> Signal.liftapp(fn x -> "Var #{name} has a new value: #{inspect x}" end)
+		|> Signal.print_message
 	end
 end
 
 prop = fn name, ts ->
 	fn -> 
-		Signal.signal(ts)
-		|> Signal.liftapp(fn x -> x end)
-		|> Signal.register(name)
+		sig = 
+			ts
+			|> Signal.signal
+			|> Signal.liftapp(fn x -> x end)
+			|> Signal.register(name)
+		sig
+		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		|> Signal.print_message
 		:ok
 	end
 end
@@ -66,9 +76,13 @@ fake_mean2 = fn name, ts1, ts2 ->
 	fn -> 
 		sts1 = Signal.signal(ts1)
 		sts2 = Signal.signal(ts2)
-		SignalEval.liftapp_eval([sts1, sts2],
-			fn {_n1, v1}, {_n2, v2} -> round((v1 + v2) / 2) end)
-		|> Signal.register(name)
+		sig = 
+			SignalEval.liftapp_eval([sts1, sts2],
+				fn {_n1, v1}, {_n2, v2} -> round((v1 + v2) / 2) end)
+			|> Signal.register(name)
+		sig
+		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		|> Signal.print_message
 		:ok
 	end
 end
@@ -78,9 +92,13 @@ fake_mean3 = fn name, ts1, ts2, ts3 ->
 		sts1 = Signal.signal(ts1)
 		sts2 = Signal.signal(ts2)
 		sts3 = Signal.signal(ts3)
-		SignalEval.liftapp_eval([sts1, sts2, sts3],
-			fn {_n1, v1}, {_n2, v2}, {_n3, v3} -> round((v1 + v2 + v3) / 3) end)
-		|> Signal.register(name)
+		sig = 
+			SignalEval.liftapp_eval([sts1, sts2, sts3],
+				fn {_n1, v1}, {_n2, v2}, {_n3, v3} -> round((v1 + v2 + v3) / 3) end)
+			|> Signal.register(name)
+		sig
+		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		|> Signal.print_message
 		:ok
 	end
 end
@@ -91,20 +109,32 @@ fake_mean4 = fn name, ts1, ts2, ts3, ts4 ->
 		sts2 = Signal.signal(ts2)
 		sts3 = Signal.signal(ts3)
 		sts4 = Signal.signal(ts4)
-		SignalEval.liftapp_eval([sts1, sts2, sts3, sts4],
-			fn {_n1, v1}, {_n2, v2}, {_n3, v3}, {_n4, v4} -> round((v1 + v2 + v3 + v4) / 4) end)
-		|> Signal.register(name)
+		sig = 
+			SignalEval.liftapp_eval([sts1, sts2, sts3, sts4],
+				fn {_n1, v1}, {_n2, v2}, {_n3, v3}, {_n4, v4} -> round((v1 + v2 + v3 + v4) / 4) end)
+			|> Signal.register(name)
+		sig
+		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		|> Signal.print_message
 		:ok
 	end
 end
 
 final = fn var, fname ->
 	fn -> 
-		Signal.signal(fname)
-		|> Obs.filter(fn {{xn, _xt}, _cxt} -> xn == var end)
-		|> Signal.liftapp(fn {_xn, xt} -> [{xt, round(:erlang.monotonic_time / 1000_000)}] end)
-		|> Signal.scan(fn [tup], acc -> [tup | acc] end)
-		|> Signal.register(String.to_atom(Atom.to_string(var) <> "_" <> Atom.to_string(fname)))
+		{:signal, sobs} = Signal.signal(fname)
+		fsobs =
+			sobs
+			|> Obs.filter(fn {{xn, _xt}, _cxt} -> xn == var end)
+		name = String.to_atom(Atom.to_string(var) <> "_" <> Atom.to_string(fname))
+		sig =
+			{:signal, fsobs}
+			|> Signal.liftapp(fn {_xn, xt} -> [{xt, round(:erlang.monotonic_time / 1000_000)}] end)
+			|> Signal.scan(fn [tup], acc -> [tup | acc] end)
+			|> Signal.register(name)
+		sig
+		|> Signal.liftapp(fn x -> "Returntrip signal #{name} has a new value: #{inspect x}" end)
+		|> Signal.print_message
 		:ok
 	end
 end

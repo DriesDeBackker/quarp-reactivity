@@ -30,7 +30,7 @@ defmodule Reactivity.DSL.Signal do
 	@doc """
 	Transforms a signal into a plain observable, stripping all messages from their contexts.
 	"""
-	def to_plain_obs({:signal, sobs}) do
+	def to_plain_obs({:signal, sobs}=_signal) do
 		{vobs, _cobs} = 
 			sobs
 			|> Obs.unzip
@@ -42,14 +42,14 @@ defmodule Reactivity.DSL.Signal do
 	Thus, the messages of the signal are fully kept, no context is stripped.
 	"""
 
-	def to_signal_obs({:signal, sobs}) do
+	def to_signal_obs({:signal, sobs}=_signal) do
 		sobs
 	end
 
 	@doc """
   Returns the current value of the Signal.
   """
-  def evaluate({:signal, sobs}) do
+  def evaluate({:signal, sobs}=_signal) do
     case Obs.last(sobs) do
       nil     -> nil
       {v, _c} -> v
@@ -63,7 +63,7 @@ defmodule Reactivity.DSL.Signal do
   Enum.scan(1..10, fn(x,y) -> x + y end) 
   => [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
   """
-	def scan({:signal, sobs}, func, default \\ nil) do
+	def scan({:signal, sobs}=_signal, func, default \\ nil) do
 		{vobs, cobs} = 
 			sobs
 			|> Obs.unzip
@@ -79,7 +79,7 @@ defmodule Reactivity.DSL.Signal do
   @doc """
   Delays each produced item by the given interval.
   """
-	def delay({:signal, sobs}, interval) do
+	def delay({:signal, sobs}=_signal, interval) do
 		dobs = 
 			sobs
 			|> Obs.delay(interval)
@@ -90,7 +90,7 @@ defmodule Reactivity.DSL.Signal do
 	Applies a procedure to the values of a signal without changing them.
 	Generally used for side effects.
 	"""
-	def each({:signal, sobs}, proc) do
+	def each({:signal, sobs}=_signal, proc) do
 		{vobs, _cobs} = 
 			sobs
 			|> Obs.unzip
@@ -105,7 +105,7 @@ defmodule Reactivity.DSL.Signal do
 	depending on the consistency guarantees of the signals
 	"""
 
-	def liftapp({:signal, sobs}, func) do
+	def liftapp({:signal, sobs}=_signal, func) do
 		new_sobs = sobs
 		|> Obs.map(fn {v, c} -> {func.(v), c} end)
 		{:signal, new_sobs}
@@ -186,7 +186,7 @@ defmodule Reactivity.DSL.Signal do
 	@doc """
 	Inspects the given signal by printing its output values `v` to the console.
 	"""
-	def print({:signal, sobs}) do
+	def print({:signal, sobs}=_signal) do
 		{vobs, _cobs} = 
 			sobs
 			|> Obs.unzip
@@ -198,7 +198,7 @@ defmodule Reactivity.DSL.Signal do
 	@doc """
 	Inspects the given signal by printing its output messages `{v, c}` to the console.
 	"""
-	def print_message({:signal, sobs}) do
+	def print_message({:signal, sobs}=_signal) do
 		sobs
 		|> Obs.inspect
 		{:signal, sobs}
