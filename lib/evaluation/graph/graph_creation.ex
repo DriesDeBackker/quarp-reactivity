@@ -69,8 +69,8 @@ defmodule Evaluation.Graph.GraphCreation do
 		r = :rand.uniform
 		hostPool = 
 			cond do
-				r >  locality -> localHosts
-				r <= locality -> remoteHosts
+				r <=  locality -> localHosts
+				r > locality -> remoteHosts
 			end
 		Enum.at(hostPool, :rand.uniform(Enum.count(hostPool))-1)
 	end

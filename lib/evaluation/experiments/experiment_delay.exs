@@ -18,7 +18,7 @@ params = [
 		:"nerves@192.168.1.144", 
 		:"nerves@192.168.1.200", 
  		:"nerves@192.168.1.225", 
- 		:"nerves@192.168.1.247"],
+ 		:"nerves@192.168.1.246"],
 	nb_of_vars: 10,
 	graph_depth: 5,
 	signals_per_level_avg: 2,
@@ -26,7 +26,8 @@ params = [
 	nodes_locality: 0.5,
 	update_interval_mean: 1000,
 	update_interval_sd: 150,
-	experiment_length: 90_000]
+	experiment_length: 20_000,
+]
 
 #Registry.set_guarantee(guarantee)
 
@@ -34,18 +35,25 @@ exp_handle = Subject.create
 exp_handle
 |> Signal.from_plain_obs
 |> Signal.register(:exp)
+Subject.next(exp_handle, :idle)
 
 var = fn name, im, isd ->
 	fn -> 
 		var_handle = Subject.create
 		run = fn
 			f -> 
-				if Signal.signal(:exp) |> Signal.evaluate == true do
-					val = round(:erlang.monotonic_time / 1000_000)
-					Subject.next(var_handle, {name, val})
+				case Signal.signal(:exp) |> Signal.evaluate do
+					:idle -> 
+						:timer.sleep(round(:rand.normal(im, isd*isd)))
+						f.(f)
+					:running -> 
+						val = round(:erlang.monotonic_time / 1000_000)
+						Subject.next(var_handle, {name, val})
+						:timer.sleep(round(:rand.normal(im, isd*isd)))
+						f.(f)
+					:done ->
+						Subject.done(var_handle)
 				end
-				:timer.sleep(round(:rand.normal(im, isd*isd)))
-				f.(f)
 			end
 		Task.start fn -> run.(run) end
 		sig = 
@@ -146,10 +154,10 @@ cs
 cs
 |> CommandsInterpretation.interpretCommandsDelay({var, prop, fake_mean2, fake_mean3, fake_mean4, final})
 
-Subject.next(exp_handle, true)
+Subject.next(exp_handle, :running)
 IO.puts("EXPERIMENT STARTED")
 :timer.sleep(Keyword.get(params, :experiment_length))
-Subject.next(exp_handle, false)
+Subject.next(exp_handle, :idle)
 IO.puts("EXPERIMENT ENDED")
 :timer.sleep(5000)
 IO.puts("GATHERING & PROCESSING RESULTS")
@@ -204,3 +212,6 @@ means =
 	|> List.flatten
 mean = Enum.sum(means) / Enum.count(means)
 IO.puts("Mean total propagation delay: #{mean}")
+
+IO.puts("SHUTTING DOWN")
+Subject.next(exp_handle, :done)
