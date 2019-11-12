@@ -1,7 +1,9 @@
 defmodule Reactivity.DSL.Signal do
 	alias Reactivity.Quality.Context
+	alias Reactivity.DSL.DoneNotifier
 	alias ReactiveMiddleware.Registry
 	alias Observables.Obs
+	alias Observables.GenObservable
 
   require Logger
 
@@ -171,8 +173,11 @@ defmodule Reactivity.DSL.Signal do
   @doc """
   Publishes a signal by registering it in the registry.
   """
-	def register(signal, name) do
+	def register({:signal, sobs}=signal, name) do
 		Registry.add_signal(signal, name)
+		{:ok, notifier} = DoneNotifier.start(name)
+		{cont, pid} = sobs
+		GenObservable.notify_done(pid, notifier)
     signal
 	end
 

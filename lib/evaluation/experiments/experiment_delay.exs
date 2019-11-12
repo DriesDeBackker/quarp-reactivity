@@ -14,21 +14,21 @@ guarantee = {:g, 0}
 
 params = [
 	hosts: [
-		:"nerves@192.168.1.245", 
-		:"nerves@192.168.1.143", 
-		:"nerves@192.168.1.199", 
- 		:"nerves@192.168.1.224", 
+		:"nerves@192.168.1.248", 
+		:"nerves@192.168.1.144", 
+		:"nerves@192.168.1.200", 
+ 		:"nerves@192.168.1.225", 
  		:"nerves@192.168.1.247"],
-	nb_of_vars: 3,
-	graph_depth: 4,
-	signals_per_level_avg: 3,
+	nb_of_vars: 10,
+	graph_depth: 5,
+	signals_per_level_avg: 2,
 	deps_per_signal_avg: 2,
 	nodes_locality: 0.5,
-	update_interval_mean: 3000,
-	update_interval_sd: 100,
-	experiment_length: 30_000]
+	update_interval_mean: 1000,
+	update_interval_sd: 150,
+	experiment_length: 90_000]
 
-Registry.set_guarantee(guarantee)
+#Registry.set_guarantee(guarantee)
 
 exp_handle = Subject.create
 exp_handle
@@ -52,9 +52,9 @@ var = fn name, im, isd ->
 			var_handle
 			|> Signal.from_plain_obs
 			|> Signal.register(name)
-		sig
-		|> Signal.liftapp(fn x -> "Var #{name} has a new value: #{inspect x}" end)
-		|> Signal.print_message
+		#sig
+		#|> Signal.liftapp(fn x -> "Var #{name} has a new value: #{inspect x}" end)
+		#|> Signal.print
 	end
 end
 
@@ -65,9 +65,9 @@ prop = fn name, ts ->
 			|> Signal.signal
 			|> Signal.liftapp(fn x -> x end)
 			|> Signal.register(name)
-		sig
-		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
-		|> Signal.print_message
+		#sig
+		#|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		#|> Signal.print
 		:ok
 	end
 end
@@ -80,9 +80,9 @@ fake_mean2 = fn name, ts1, ts2 ->
 			SignalEval.liftapp_eval([sts1, sts2],
 				fn {_n1, v1}, {_n2, v2} -> round((v1 + v2) / 2) end)
 			|> Signal.register(name)
-		sig
-		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
-		|> Signal.print_message
+		#sig
+		#|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		#|> Signal.print
 		:ok
 	end
 end
@@ -96,9 +96,9 @@ fake_mean3 = fn name, ts1, ts2, ts3 ->
 			SignalEval.liftapp_eval([sts1, sts2, sts3],
 				fn {_n1, v1}, {_n2, v2}, {_n3, v3} -> round((v1 + v2 + v3) / 3) end)
 			|> Signal.register(name)
-		sig
-		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
-		|> Signal.print_message
+		#sig
+		#|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		#|> Signal.print
 		:ok
 	end
 end
@@ -113,9 +113,9 @@ fake_mean4 = fn name, ts1, ts2, ts3, ts4 ->
 			SignalEval.liftapp_eval([sts1, sts2, sts3, sts4],
 				fn {_n1, v1}, {_n2, v2}, {_n3, v3}, {_n4, v4} -> round((v1 + v2 + v3 + v4) / 4) end)
 			|> Signal.register(name)
-		sig
-		|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
-		|> Signal.print_message
+		#sig
+		#|> Signal.liftapp(fn x -> "Signal #{name} has a new value: #{inspect x}" end)
+		#|> Signal.print
 		:ok
 	end
 end
@@ -132,9 +132,9 @@ final = fn var, fname ->
 			|> Signal.liftapp(fn {_xn, xt} -> [{xt, round(:erlang.monotonic_time / 1000_000)}] end)
 			|> Signal.scan(fn [tup], acc -> [tup | acc] end)
 			|> Signal.register(name)
-		sig
-		|> Signal.liftapp(fn x -> "Returntrip signal #{name} has a new value: #{inspect x}" end)
-		|> Signal.print_message
+		#sig
+		#|> Signal.liftapp(fn x -> "Returntrip signal #{name} has a new value: #{inspect x}" end)
+		#|> Signal.print
 		:ok
 	end
 end
@@ -147,9 +147,12 @@ cs
 |> CommandsInterpretation.interpretCommandsDelay({var, prop, fake_mean2, fake_mean3, fake_mean4, final})
 
 Subject.next(exp_handle, true)
+IO.puts("EXPERIMENT STARTED")
 :timer.sleep(Keyword.get(params, :experiment_length))
 Subject.next(exp_handle, false)
-:timer.sleep(1000)
+IO.puts("EXPERIMENT ENDED")
+:timer.sleep(5000)
+IO.puts("GATHERING & PROCESSING RESULTS")
 
 
 vars = Graph.getVars(g)
@@ -186,7 +189,7 @@ means =
 			IO.puts(inspect(grouped))
 			full = 
 				grouped
-				|> Enum.filter(fn {_xt, xrs} -> Enum.count(xrs) == Enum.count(fs) end)
+				|> Enum.filter(fn {_xt, xrs} -> Enum.count(xrs) >= Enum.count(fs) end)
 			IO.puts(inspect(full))
 			maxes = 
 				full
@@ -199,5 +202,5 @@ means =
 			delays
 		end)
 	|> List.flatten
-mean = round(Enum.sum(means) / Enum.count(means))
+mean = Enum.sum(means) / Enum.count(means)
 IO.puts("Mean total propagation delay: #{mean}")

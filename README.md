@@ -22,7 +22,7 @@ by adding `quarp` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:quarp, "~> 1.1.0"}
+    {:quarp, "~> 1.2"}
   ]
 end
 ```

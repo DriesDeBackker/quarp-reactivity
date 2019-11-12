@@ -12,25 +12,25 @@ guarantee = {:g, 0}
 
 params = [
 	hosts: [
-		:"nerves@192.168.1.245", 
-		:"nerves@192.168.1.143", 
-		:"nerves@192.168.1.199",
- 		:"nerves@192.168.1.224", 
- 		:"nerves@192.168.1.247"],
-	nb_of_vars: 5,
-	graph_depth: 4,
+		:"nerves@192.168.1.247", 
+		:"nerves@192.168.1.144", 
+		:"nerves@192.168.1.200",
+ 		:"nerves@192.168.1.225", 
+ 		:"nerves@192.168.1.248"],
+	nb_of_vars: 10,
+	graph_depth: 5,
 	signals_per_level_avg: 2,
 	deps_per_signal_avg: 2,
 	nodes_locality: 0.5,
 	values_mean: 100,
-	values_sd: 20,
-	update_interval_mean: 2000,
-	update_interval_sd: 100,
-	experiment_length: 600_000,
+	values_sd: 15,
+	update_interval_mean: 1000,
+	update_interval_sd: 150,
+	experiment_length: 90_000,
 ]
 
 
-Registry.set_guarantee(guarantee)
+#Registry.set_guarantee(guarantee)
 
 var = fn name, im, isd, vm, vsd ->
 	fn -> 
@@ -113,3 +113,7 @@ cs
 |> Enum.each(fn c -> IO.puts(inspect c) end)
 cs
 |> CommandsInterpretation.interpretCommandsTraffic({var, mean1, mean2, mean3, mean4})
+
+IO.puts("EXPERIMENT STARTED")
+:timer.sleep(Keyword.get(params, :experiment_length))
+IO.puts("EXPERIMENT ENDED")
